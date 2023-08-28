@@ -8,12 +8,12 @@ const cors = require(`cors`);
 const http = require(`http`).createServer(app);
 const io = require(`socket.io`)(http, {
 	cors: {
-		origins: ['https://aurorareg.vercel.app']
+		origins: ['https://aurorareg.onrender.com']
 	}
 });
 const { secret } = require(`./config.js`);
 
-app.use(cors({ origin: 'https://aurorareg.vercel.app' }));
+app.use(cors({ origin: 'https://aurorareg.onrender.com' }));
 
 app.use(express.json());
 
