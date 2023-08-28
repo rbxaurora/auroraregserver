@@ -4,6 +4,8 @@ const User = require(`../models/User`);
 const Role = require(`../models/Role`);
 const Member = require('../models/Member');
 const Report = require('../models/Report');
+const Post = require(`../models/Post`);
+const Chat = require(`../models/Chat`);
 const { secret } = require(`../config.js`);
 
 
@@ -43,7 +45,7 @@ class apiController {
 			
 			const role = await Role.findOne({ _id: decodedData.roles });
 
-			if (role.value == 'USER' || role.value == 'SPECTATOR') {
+			if (role.value == 'USER') {
 				return res.status(403).json({ error: 'Доступ запрещен.' });
 			}
 
@@ -207,7 +209,7 @@ class apiController {
 
 			const role = await Role.findOne({ _id: decodedData.roles });
 
-			if (role.value == 'USER' || role.value == 'SPECTATOR') {
+			if (role.value == 'USER') {
 				return res.status(403).json({ error: 'Доступ запрещен' });
 			}
 
@@ -232,7 +234,7 @@ class apiController {
 
 			const role = await Role.findOne({ _id: decodedData.roles });
 
-			if (role.value == 'USER' || role.value == 'SPECTATOR') {
+			if (role.value == 'USER') {
 				return res.status(403).json({ error: 'Доступ запрещен' });
 			}
 
@@ -309,7 +311,7 @@ class apiController {
 
 			const role = await Role.findOne({ _id: decodedData.roles });
 
-			if (role.value == 'USER' || role.value == 'SPECTATOR') {
+			if (role.value == 'USER') {
 				return res.status(403).json({ error: 'Доступ запрещен' });
 			}
 
@@ -367,7 +369,7 @@ class apiController {
 
 			const role = await Role.findOne({ _id: decodedData.roles });
 
-			if (role.value == 'USER' || role.value == 'SPECTATOR') {
+			if (role.value == 'USER') {
 				return res.status(403).json({ error: 'Доступ запрещен' });
 			}
 
@@ -377,6 +379,149 @@ class apiController {
 		} catch (e) {
 			console.log(e);
 			return res.status(400).json({ error: 'Ошибка удаления записи реестра.' });
+		}
+	}
+
+	async getPosts (req, res) {
+		const posts = await Post.find({});
+
+		return res.status(200).json(posts);
+	}
+
+	async savePost (req, res) {
+		const authToken = req.headers.authorization.split(` `)[1];
+		const { postName, content } = req.body;
+
+		if (!authToken) {
+			return res.status(401).json({ error: 'Пользователь не авторизован' });
+		}
+
+		try {
+			const decodedData = jwt.verify(authToken, secret);
+
+			const role = await Role.findOne({ _id: decodedData.roles });
+
+			if (role.value == 'USER' || role.value == 'SPECTATOR') {
+				return res.status(403).json({ error: 'Доступ запрещен' });
+			}
+
+			const admin = await User.findOne({ _id: decodedData.id });
+
+			const post = new Post({
+				title: postName,
+				author: admin.username,
+				content: content
+			});
+
+			await post.save();
+
+			return res.status(200).json({ message: 'Success!' });
+		} catch (e) {
+			console.log(e);
+			return res.status(400).json({ error: 'Ошибка удаления записи реестра.' });
+		}
+	}
+
+	async getPost (req, res) {
+		const { id } = req.query;
+		const post = await Post.findOne({ _id: id });
+
+		if (!post) {
+			return res.status(404).json({ error: 'Пост не найден!' });
+		}
+
+		return res.status(200).json(post);
+	}
+
+	async deletePost (req, res) {
+		const { id } = req.body;
+		await Post.deleteOne({ _id: id });
+
+		return res.status(200).json({ message: 'Success!' });
+	}
+
+	async getChats (req, res) {
+		const authToken = req.headers.authorization.split(` `)[1];
+
+		if (!authToken) {
+			return res.status(401).json({ error: 'Пользователь не авторизован' });
+		}
+
+		try {
+			const decodedData = jwt.verify(authToken, secret);
+
+			const role = await Role.findOne({ _id: decodedData.roles });
+
+			if (role.value == 'USER') {
+				return res.status(403).json({ error: 'Доступ запрещен' });
+			}
+
+			const chats = await Chat.find();
+
+			return res.status(200).json(chats);
+		} catch (e) {
+			console.log(e);
+			return res.status(400).json({ error: 'Ошибка получения списка чатов.' });
+		}
+	}
+
+	async addChat (req, res) {
+		const authToken = req.headers.authorization.split(` `)[1];
+		const { name } = req.body;
+
+		if (!authToken) {
+			return res.status(401).json({ error: 'Пользователь не авторизован' });
+		}
+
+		try {
+			const decodedData = jwt.verify(authToken, secret);
+
+			const role = await Role.findOne({ _id: decodedData.roles });
+
+			if (role.value != 'OWNER') {
+				return res.status(403).json({ error: 'Доступ запрещен' });
+			}
+
+			const chatId = await Chat.findOne().sort({ chatId: -1 });
+			let id = chatId ? Number(chatId[0].chatId + 1) : 0;
+
+			const chat = new Chat({
+				chatId: id,
+				chatTitle: name
+			});
+
+			await chat.save();
+
+			return res.status(200).json({ message: 'Success!' });
+		} catch (e) {
+			console.log(e);
+			return res.status(400).json({ error: 'Ошибка получения списка чатов.' });
+		}
+	}
+
+	async getChat (req, res) {
+		const authToken = req.headers.authorization.split(` `)[1];
+		const { id } = req.query;
+
+		if (!authToken) {
+			return res.status(401).json({ error: 'Пользователь не авторизован' });
+		}
+
+		try {
+			const decodedData = jwt.verify(authToken, secret);
+
+			const role = await Role.findOne({ _id: decodedData.roles });
+
+			if (role.value == 'USER') {
+				return res.status(403).json({ error: 'Доступ запрещен' });
+			}
+
+			const chat = await Chat.findOne({ chatId: id });
+
+			return res.status(200).json(chat);
+		} catch (e) {
+			console.log(e);
+			return res.status(400).json({ error: 'Ошибка получения списка чатов.' });
 		}
 	}
 }

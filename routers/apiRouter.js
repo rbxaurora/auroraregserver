@@ -15,6 +15,13 @@ router.get('/getmemberslist', apiController.getMembersList);
 router.post('/savemember', apiController.saveMember);
 router.post('/deletemember', apiController.deleteMember);
 router.post('/deletereg', apiController.deleteReg);
+router.get('/posts', apiController.getPosts);
+router.post(`/savepost`, apiController.savePost);
+router.get(`/getpost`, apiController.getPost);
+router.post(`/deletepost`, apiController.deletePost);
+router.get(`/getchats`, apiController.getChats);
+router.post(`/addchat`, apiController.addChat);
+router.get(`/getchat`, apiController.getChat);
 
 
 module.exports = router;
