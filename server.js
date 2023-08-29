@@ -4,16 +4,17 @@ const app = express();
 require(`dotenv`).config();
 const authRouter = require(`./routers/authRouter`);
 const apiRouter = require(`./routers/apiRouter`);
+const msgRouter = require('./routers/msgRouter');
 const cors = require(`cors`);
 const http = require(`http`).createServer(app);
 const io = require(`socket.io`)(http, {
 	cors: {
-		origins: ['https://aurorareg.onrender.com']
+		origins: ['http://localhost:5173']
 	}
 });
 const { secret } = require(`./config.js`);
 
-app.use(cors({ origin: 'https://aurorareg.onrender.com' }));
+app.use(cors({ origin: 'http://localhost:5173' }));
 
 app.use(express.json());
 
@@ -69,3 +70,4 @@ mongoose.connect(process.env.DB_PASS);
 
 app.use('/auth', authRouter);
 app.use('/api', apiRouter);
+app.use('/msg', msgRouter);

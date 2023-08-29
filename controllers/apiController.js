@@ -7,7 +7,7 @@ const Report = require('../models/Report');
 const Post = require(`../models/Post`);
 const Chat = require(`../models/Chat`);
 const { secret } = require(`../config.js`);
-
+const Firebase = require(`../firebase/firebase-admin`);
 
 class apiController {
 	async getUser (req, res) {
@@ -482,7 +482,7 @@ class apiController {
 				return res.status(403).json({ error: 'Доступ запрещен' });
 			}
 
-			const chatId = await Chat.findOne().sort({ chatId: -1 });
+			const chatId = await Chat.find().sort({ chatId: -1 }).limit(1);
 			let id = chatId ? Number(chatId[0].chatId + 1) : 0;
 
 			const chat = new Chat({
