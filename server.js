@@ -9,12 +9,12 @@ const cors = require(`cors`);
 const http = require(`http`).createServer(app);
 const io = require(`socket.io`)(http, {
 	cors: {
-		origins: ['http://localhost:5173']
+		origins: ['https://aurorareg.onrender.com']
 	}
 });
 const { secret } = require(`./config.js`);
 
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({ origin: 'https://aurorareg.onrender.com' }));
 
 app.use(express.json());
 
